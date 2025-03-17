@@ -5,63 +5,55 @@ const Timer = () => {
   const [seconds, setSeconds] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isRunning, setIsRunning] = useState(false); // State to track if the timer is running
+  const [isRunning, setIsRunning] = useState(false);
 
-  const timerRef = useRef(null); // Ref to store the timer ID
+  const timerRef = useRef(null);
 
-  // Check system theme preference (dark or light)
   useEffect(() => {
     const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setIsDarkMode(prefersDarkMode); // Set initial theme based on system preference
+    setIsDarkMode(prefersDarkMode);
 
-    // Listen for theme changes (e.g., if the user switches the system theme)
     const themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     themeMediaQuery.addEventListener('change', (e) => {
       setIsDarkMode(e.matches);
     });
 
-    return () => themeMediaQuery.removeEventListener('change', () => {}); // Clean up event listener
+    return () => themeMediaQuery.removeEventListener('change', () => {});
   }, []);
 
-  // Timer logic
   const startTimer = () => {
-    timerRef.current = setInterval(() => {
-      setSeconds((prevSeconds) => {
-        if (prevSeconds === 59) {
-          setMinutes((prevMinutes) => prevMinutes + 1);
-          return 0;
-        }
-        return prevSeconds + 1;
-      });
-    }, 1000);
+    if (!isRunning) {
+      setIsRunning(true);
+    }
   };
 
   useEffect(() => {
     if (isRunning) {
-      startTimer(); // Start the timer when the isRunning state is true
+      timerRef.current = setInterval(() => {
+        setSeconds((prevSeconds) => {
+          if (prevSeconds === 59) {
+            setMinutes((prevMinutes) => prevMinutes + 1);
+            return 0;
+          }
+          return prevSeconds + 1;
+        });
+      }, 1000);
     } else {
-      clearInterval(timerRef.current); // Clear the timer if it's not running
+      clearInterval(timerRef.current);
     }
 
-    return () => clearInterval(timerRef.current); // Cleanup on unmount
+    return () => clearInterval(timerRef.current);
   }, [isRunning]);
 
-  // Restart the timer
   const restart = () => {
     setSeconds(0);
     setMinutes(0);
-    setIsRunning(true); // Restart the timer by setting isRunning to true
+    setIsRunning(true);
   };
 
-  // Stop the timer
   const stop = () => {
     clearInterval(timerRef.current);
-    setIsRunning(false); // Stop the timer by setting isRunning to false
-  };
-
-  // Start the timer
-  const start = () => {
-    setIsRunning(true); // Start the timer by setting isRunning to true
+    setIsRunning(false);
   };
 
   return (
@@ -74,20 +66,22 @@ const Timer = () => {
             {seconds < 10 ? "0" + seconds : seconds}
           </h2>
 
-          {/* Start button with icon */}
           {!isRunning && (
-            <button className="start" onClick={start}>
+            <button className="start" onClick={startTimer}>
               <i className="fas fa-play"></i> Start
             </button>
           )}
 
-          {/* Restart and Stop buttons */}
-          <button className="restart" onClick={restart}>
-            Restart
-          </button>
-          <button className="stop" onClick={stop}>
-            Stop
-          </button>
+          {isRunning && (
+            <>
+              <button className="restart" onClick={restart}>
+                Restart
+              </button>
+              <button className="stop" onClick={stop}>
+                Stop
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
